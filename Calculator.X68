@@ -1,8 +1,8 @@
 *-----------------------------------------------------------
-* Title      : Calculator Program
+* Title      : Extended Calculator Program
 * Written by : Harry Knight
 * Date       : 26/03/25
-* Description: Simple Calculator App with Numeric Operations
+* Description: Calculator App with Additional Numeric Operations
 *-----------------------------------------------------------
 * PROGRAM CONSTANTS
 CR              EQU     $0D     * Carriage return
@@ -50,7 +50,7 @@ INPUT_OP:
         * Check operation range
         CMP.B   #1,D1           * Check if less than 1
         BLT     INVALID_OP
-        CMP.B   #4,D1           * Check if greater than 4
+        CMP.B   #6,D1           * Check if greater than 6
         BGT     INVALID_OP
 * PERFORM CALCULATION
 CALCULATE:
@@ -63,6 +63,10 @@ CALCULATE:
         BEQ     MUL_NUMS
         CMP.B   #4,D1           * Division
         BEQ     DIV_NUMS
+        CMP.B   #5,D1           * Modulus
+        BEQ     MOD_NUMS
+        CMP.B   #6,D1           * Percentage
+        BEQ     PERC_NUMS
         
         * Invalid operation handler
         BRA     INVALID_OP
@@ -89,6 +93,31 @@ DIV_NUMS:
         
         MOVE.L  D5,D1
         DIVS    D6,D1
+        BRA     DISPLAY_RESULT
+* MODULUS SUBROUTINE
+MOD_NUMS:
+        * Check for division by zero
+        CMP.L   #0,D6
+        BEQ     DIV_ZERO
+        
+        * Modulus calculation: D1 = D5 % D6
+        MOVE.L  D5,D1
+        DIVS    D6,D1
+        SWAP    D1              * Remainder is in upper word
+        EXT.W    D1              * Sign extend the remainder
+        EXT.L   D1              * Extend to long word
+        BRA     DISPLAY_RESULT
+* PERCENTAGE SUBROUTINE
+PERC_NUMS:
+        * Calculate percentage: (D5 / D6) * 100
+        * Check for division by zero
+        CMP.L   #0,D6
+        BEQ     DIV_ZERO
+        
+        * Percentage calculation
+        MOVE.L  D5,D1
+        MULS    #100,D1         * Multiply first number by 100
+        DIVS    D6,D1           * Divide by second number
         BRA     DISPLAY_RESULT
 * DISPLAY RESULT
 DISPLAY_RESULT:
@@ -121,7 +150,7 @@ EXIT:
         TRAP    #15
 * DATA SECTION
 * Message strings
-WELCOME_MSG     DC.B    'Simple Calculator Program',CR,LF,0
+WELCOME_MSG     DC.B    'Extended Calculator Program',CR,LF,0
 PROMPT_NUM1     DC.B    'Enter first number: ',0
 PROMPT_NUM2     DC.B    'Enter second number: ',0
 PROMPT_OP       DC.B    'Enter operation:',CR,LF
@@ -129,7 +158,9 @@ PROMPT_OP       DC.B    'Enter operation:',CR,LF
                 DC.B    '2. Subtraction',CR,LF
                 DC.B    '3. Multiplication',CR,LF
                 DC.B    '4. Division',CR,LF
-                DC.B    'Choose operation (1-4): ',0
+                DC.B    '5. Modulus',CR,LF
+                DC.B    '6. Percentage',CR,LF
+                DC.B    'Choose operation (1-6): ',0
 RESULT_MSG      DC.B    'Result: ',0
 NEWLINE         DC.B    CR,LF,0
 * ERROR MESSAGES
