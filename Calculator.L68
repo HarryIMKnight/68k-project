@@ -1,0 +1,173 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 26/03/2025 13:12:37
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : Calculator Program
+00000000                             3  * Written by : Harry Knight
+00000000                             4  * Date       : 26/03/25
+00000000                             5  * Description: Simple Calculator App with Numeric Operations
+00000000                             6  *-----------------------------------------------------------
+00000000                             7  * PROGRAM CONSTANTS
+00000000  =0000000D                  8  CR              EQU     $0D     * Carriage return
+00000000  =0000000A                  9  LF              EQU     $0A     * Line feed
+00000000                            10  * START OF PROGRAM
+00001000                            11          ORG     $1000
+00001000                            12  START:
+00001000                            13          * Display welcome message
+00001000  43F9 000010EC             14          LEA     WELCOME_MSG,A1
+00001006  103C 000E                 15          MOVE.B  #14,D0
+0000100A  4E4F                      16          TRAP    #15
+0000100C                            17  * INPUT FIRST NUMBER
+0000100C                            18  INPUT_NUM1:
+0000100C  43F9 00001108             19          LEA     PROMPT_NUM1,A1
+00001012  103C 000E                 20          MOVE.B  #14,D0
+00001016  4E4F                      21          TRAP    #15
+00001018                            22          
+00001018                            23          * Read first number
+00001018  103C 0004                 24          MOVE.B  #4,D0
+0000101C  4E4F                      25          TRAP    #15
+0000101E  2A01                      26          MOVE.L  D1,D5           * Store first number in D5
+00001020                            27  * INPUT SECOND NUMBER
+00001020                            28  INPUT_NUM2:
+00001020  43F9 0000111D             29          LEA     PROMPT_NUM2,A1
+00001026  103C 000E                 30          MOVE.B  #14,D0
+0000102A  4E4F                      31          TRAP    #15
+0000102C                            32          
+0000102C                            33          * Read second number
+0000102C  103C 0004                 34          MOVE.B  #4,D0
+00001030  4E4F                      35          TRAP    #15
+00001032  2C01                      36          MOVE.L  D1,D6           * Store second number in D6
+00001034                            37  * INPUT OPERATION
+00001034                            38  INPUT_OP:
+00001034  43F9 00001133             39          LEA     PROMPT_OP,A1
+0000103A  103C 000E                 40          MOVE.B  #14,D0
+0000103E  4E4F                      41          TRAP    #15
+00001040                            42          
+00001040                            43          * Read operation
+00001040  103C 0005                 44          MOVE.B  #5,D0           * Change to read characters
+00001044  4E4F                      45          TRAP    #15
+00001046                            46          
+00001046                            47          * Convert ASCII to actual number
+00001046  0401 0030                 48          SUB.B   #'0',D1         * Convert ASCII to numeric value
+0000104A                            49          
+0000104A                            50          * Check operation range
+0000104A  B23C 0001                 51          CMP.B   #1,D1           * Check if less than 1
+0000104E  6D00 007A                 52          BLT     INVALID_OP
+00001052  B23C 0004                 53          CMP.B   #4,D1           * Check if greater than 4
+00001056  6E00 0072                 54          BGT     INVALID_OP
+0000105A                            55  * PERFORM CALCULATION
+0000105A                            56  CALCULATE:
+0000105A                            57          * Compare and execute operation
+0000105A  B23C 0001                 58          CMP.B   #1,D1           * Addition
+0000105E  6700 001E                 59          BEQ     ADD_NUMS
+00001062  B23C 0002                 60          CMP.B   #2,D1           * Subtraction
+00001066  6700 001E                 61          BEQ     SUB_NUMS
+0000106A  B23C 0003                 62          CMP.B   #3,D1           * Multiplication
+0000106E  6700 001E                 63          BEQ     MUL_NUMS
+00001072  B23C 0004                 64          CMP.B   #4,D1           * Division
+00001076  6700 001E                 65          BEQ     DIV_NUMS
+0000107A                            66          
+0000107A                            67          * Invalid operation handler
+0000107A  6000 004E                 68          BRA     INVALID_OP
+0000107E                            69  * ADDITION SUBROUTINE
+0000107E                            70  ADD_NUMS:
+0000107E  2205                      71          MOVE.L  D5,D1
+00001080  D286                      72          ADD.L   D6,D1
+00001082  6000 0024                 73          BRA     DISPLAY_RESULT
+00001086                            74  * SUBTRACTION SUBROUTINE
+00001086                            75  SUB_NUMS:
+00001086  2205                      76          MOVE.L  D5,D1
+00001088  9286                      77          SUB.L   D6,D1
+0000108A  6000 001C                 78          BRA     DISPLAY_RESULT
+0000108E                            79  * MULTIPLICATION SUBROUTINE
+0000108E                            80  MUL_NUMS:
+0000108E  2205                      81          MOVE.L  D5,D1
+00001090  C3C6                      82          MULS    D6,D1
+00001092  6000 0014                 83          BRA     DISPLAY_RESULT
+00001096                            84  * DIVISION SUBROUTINE
+00001096                            85  DIV_NUMS:
+00001096                            86          * Check for division by zero
+00001096  BCBC 00000000             87          CMP.L   #0,D6
+0000109C  6700 003C                 88          BEQ     DIV_ZERO
+000010A0                            89          
+000010A0  2205                      90          MOVE.L  D5,D1
+000010A2  83C6                      91          DIVS    D6,D1
+000010A4  6000 0002                 92          BRA     DISPLAY_RESULT
+000010A8                            93  * DISPLAY RESULT
+000010A8                            94  DISPLAY_RESULT:
+000010A8                            95          * Display result message
+000010A8  43F9 0000119B             96          LEA     RESULT_MSG,A1
+000010AE  103C 000E                 97          MOVE.B  #14,D0
+000010B2  4E4F                      98          TRAP    #15
+000010B4                            99          
+000010B4                           100          * Convert and display numeric result
+000010B4  103C 0003                101          MOVE.B  #3,D0
+000010B8  4E4F                     102          TRAP    #15
+000010BA                           103          * New line
+000010BA  43F9 000011A4            104          LEA     NEWLINE,A1
+000010C0  103C 000E                105          MOVE.B  #14,D0
+000010C4  4E4F                     106          TRAP    #15
+000010C6  6000 001E                107          BRA     EXIT
+000010CA                           108  * ERROR HANDLING
+000010CA                           109  INVALID_OP:
+000010CA  43F9 000011A7            110          LEA     ERR_OP_MSG,A1
+000010D0  103C 000E                111          MOVE.B  #14,D0
+000010D4  4E4F                     112          TRAP    #15
+000010D6  6000 000E                113          BRA     EXIT
+000010DA                           114  DIV_ZERO:
+000010DA  43F9 000011BC            115          LEA     ERR_DIV_ZERO,A1
+000010E0  103C 000E                116          MOVE.B  #14,D0
+000010E4  4E4F                     117          TRAP    #15
+000010E6                           118  * PROGRAM EXIT
+000010E6                           119  EXIT:
+000010E6  103C 0009                120          MOVE.B  #9,D0
+000010EA  4E4F                     121          TRAP    #15
+000010EC                           122  * DATA SECTION
+000010EC                           123  * Message strings
+000010EC= 53 69 6D 70 6C 65 ...    124  WELCOME_MSG     DC.B    'Simple Calculator Program',CR,LF,0
+00001108= 45 6E 74 65 72 20 ...    125  PROMPT_NUM1     DC.B    'Enter first number: ',0
+0000111D= 45 6E 74 65 72 20 ...    126  PROMPT_NUM2     DC.B    'Enter second number: ',0
+00001133= 45 6E 74 65 72 20 ...    127  PROMPT_OP       DC.B    'Enter operation:',CR,LF
+00001145= 31 2E 20 41 64 64 ...    128                  DC.B    '1. Addition',CR,LF
+00001152= 32 2E 20 53 75 62 ...    129                  DC.B    '2. Subtraction',CR,LF
+00001162= 33 2E 20 4D 75 6C ...    130                  DC.B    '3. Multiplication',CR,LF
+00001175= 34 2E 20 44 69 76 ...    131                  DC.B    '4. Division',CR,LF
+00001182= 43 68 6F 6F 73 65 ...    132                  DC.B    'Choose operation (1-4): ',0
+0000119B= 52 65 73 75 6C 74 ...    133  RESULT_MSG      DC.B    'Result: ',0
+000011A4= 0D 0A 00                 134  NEWLINE         DC.B    CR,LF,0
+000011A7                           135  * ERROR MESSAGES
+000011A7= 49 6E 76 61 6C 69 ...    136  ERR_OP_MSG      DC.B    'Invalid operation!',CR,LF,0
+000011BC= 45 72 72 6F 72 3A ...    137  ERR_DIV_ZERO    DC.B    'Error: Division by zero!',CR,LF,0
+000011D7                           138          END     START
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ADD_NUMS            107E
+CALCULATE           105A
+CR                  D
+DISPLAY_RESULT      10A8
+DIV_NUMS            1096
+DIV_ZERO            10DA
+ERR_DIV_ZERO        11BC
+ERR_OP_MSG          11A7
+EXIT                10E6
+INPUT_NUM1          100C
+INPUT_NUM2          1020
+INPUT_OP            1034
+INVALID_OP          10CA
+LF                  A
+MUL_NUMS            108E
+NEWLINE             11A4
+PROMPT_NUM1         1108
+PROMPT_NUM2         111D
+PROMPT_OP           1133
+RESULT_MSG          119B
+START               1000
+SUB_NUMS            1086
+WELCOME_MSG         10EC
